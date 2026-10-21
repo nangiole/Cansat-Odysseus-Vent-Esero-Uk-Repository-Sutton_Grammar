@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+    
+<head>
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>
+    CanSat | SGS
+</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="logo2.png">
+</head>
+<body>
+    <h1>
+          Academix.
+    </h1>
+    <div class="S">
+      <h4>
+        Sutton Grammar
+      </h4>
+    </div>
+    
+    <h2>
+      Can<div class="Blue">Sat</div> 
+    </h2>
+    <h3>
+      SGS 2026-2027
+    </h3>
+    
+    
+    <div class="Earth">
+    <img src="{{ url_for('static', filename='Earth.gif') }}">
+    </div>
+    <img src="{{ url_for('static', filename='Sattelite.gif') }}">
+    <div class="DATA">
+      <h2>
+        Our Data:
+      </h2>
+    </div>
+
+    <div class="charts">
+        <div class="chart-container">
+            <h3>Temperature</h3>
+            <canvas id="chart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h3>Pressure</h3>
+            <canvas id="chart2"></canvas>
+        </div>
+    </div>
+
+    
+</body>
+
+<style>
+  body {
+
+  min-height: 100vh;
+  background:
+    /* Purple glow (top left) */
+    radial-gradient(
+      circle at 15% -10%,
+      rgba(230, 107, 255, 0.55) 0%,
+      rgba(139, 92, 246, 0.25) 25%,
+      transparent 60%
+    ),
+
+    /* Blue glow (top right) */
+    radial-gradient(
+      circle at 85% -5%,
+      rgba(0, 251, 255, 0.5) 0%,
+      rgba(3, 166, 195, 0.2) 30%,
+      transparent 65%
+    ),
+
+    /* Large diagonal blend */
+    radial-gradient(
+      ellipse at 45% 0%,
+      rgba(99, 102, 241, 0.18) 0%,
+      transparent 70%
+    ),
+
+    /* Base */
+    #000;
+
+  background-repeat: no-repeat;
+  
+  
+}
+
+.DATA h2{
+    color: rgb(149, 207, 236);
+    font-size: 50px;
+    text-align: left;
+    margin-left: 500px;
+    font-weight: 100;
+
+}
+
+h1{
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+   font-size: 1px;
+   color: rgb(76, 76, 136);
+   background-color: rgb(255, 255, 255);
+   min-height: 80px;
+   border-radius: 30px;
+   opacity: 30%;
+   max-width: 40%;
+   min-width: 40%;
+   margin-left: 29%;
+    margin-top: 8%;
+   text-align: left;
+  position: relative;
+   
+   
+}
+
+h2{
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 110px;
+    text-align:  center;
+    font-weight: 900;
+    margin-left: -50%;
+}
+
+h3{
+    color: rgb(211, 187, 219);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 30px;
+    text-align:  center;
+    font-weight: 100;
+    margin-top: -100px;
+    margin-left: -40%;
+}
+
+img {
+  float: right;
+  margin-right: 12%;
+  margin-top:-23%;
+
+  
+}
+
+
+
+.Blue{
+  color: aquamarine;
+  margin-top: -150px;
+  margin-left: 380px;
+  text-shadow: 10px 10px 80px aqua;
+}
+
+.S h4{
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 100;
+  background-color: none;
+  text-align: center;
+  margin-bottom:0%;
+  text-shadow: 7px 1px 10px white;
+}
+
+
+.Earth img{
+  margin-left: 100%;
+  margin-top: -300px;
+}
+
+.chart{
+    margin-top: -100px;
+    display: flex;
+}
+.charts {
+           
+            gap: 20px;
+            width: 100%;
+        }
+
+        .chart-container {
+            flex: 1;
+            min-width: 0;
+        }
+
+        @media (max-width: 100px) {
+            .charts {
+                flex-direction: column;
+            }
+        }
+
+</style>
+    
+    
+
+    <script>
+        // Temperature chart
+        const chart = new Chart(
+            document.getElementById("chart"),
+            {
+                type: "line",
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: "Temperature",
+                        data: [],
+                        borderColor: "red",
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    animation: false,
+                    scales: {
+                        y: {
+                            min: 10,
+                            max: 30
+                        }
+                    }
+                }
+            }
+        );
+
+        // Pressure chart
+        const chart2 = new Chart(
+            document.getElementById("chart2"),
+            {
+                type: "line",
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: "Pressure",
+                        data: [],
+                        borderColor: "blue",
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    animation: false,
+                    scales: {
+                        y: {
+                            min: 10,
+                            max: 30,
+                        }
+                    }
+                }
+            }
+        );
+
+        // Update temperature
+        async function updateTemperature() {
+            try {
+                const response = await fetch("/data");
+                if (!response.ok) throw new Error("Temperature request failed");
+
+                const values = await response.json();
+
+                chart.data.labels = values.map((_, i) => i);
+                chart.data.datasets[0].data = values;
+                chart.update("none");
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // Update pressure
+        async function updatePressure() {
+            try {
+                const response = await fetch("/data2");
+                if (!response.ok) throw new Error("Pressure request failed");
+
+                const values = await response.json();
+
+                chart2.data.labels = values.map((_, i) => i);
+                chart2.data.datasets[0].data = values;
+                chart2.update("none");
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // Initial update
+        updateTemperature();
+        updatePressure();
+
+        // Refresh every second
+        setInterval(updateTemperature, 100);
+        setInterval(updatePressure, 100);
+    </script>
+
+
+</body>
+
