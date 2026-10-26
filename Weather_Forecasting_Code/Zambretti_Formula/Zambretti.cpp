@@ -11,6 +11,21 @@ double rawToSeaLevelPressure(double p, double temperature, double altitude)
     return pO;
 }
 
+bool isPressureFalling(double deltaPressure)
+{
+    return deltaPressure >= -5;
+}
+
+bool isPressureRising(double deltaPressure)
+{
+    return deltaPressure <= 5;
+}
+
+bool isPressureSteady(double deltaPressure)
+{
+    return (((isPressureFalling(deltaPressure)) == false) && (isPressureRising(deltaPressure) == false));
+}
+
 int main()
 {
     //Sea level equivalent pressure
