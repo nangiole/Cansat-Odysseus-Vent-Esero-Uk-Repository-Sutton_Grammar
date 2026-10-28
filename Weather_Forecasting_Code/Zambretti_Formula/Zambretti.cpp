@@ -1,5 +1,8 @@
 #include <iostream>
 #include <cmath>
+#include <fstream>
+#include <vector>
+#include <string>
 
 using namespace std;
 
@@ -11,10 +14,43 @@ double rawToSeaLevelPressure(double p, double temperature, double altitude)
     return pO;
 }
 
-double changeInPressure(double pO)
-{
-    //calculate the amount of pressure change over a 3 hour window at the ground station before launching the cansat. Flask will make a graph
-    return pO; //TODO!
+double changeInPressure() {
+    // 1. Open the text file created by Python
+    ifstream infile("pressure_log.txt");
+    string line;
+    vector<double> pressures; // Dynamic list to store all pressure values
+
+    // 2. Read the file line by line until the end
+    while (getline(infile, line)) {
+        if (!line.empty()) {
+            // Convert the text string into a decimal number (float) and store it
+            pressures.push_back(stod(line));
+        }
+        else
+        {
+            cout<<"Waiting for the next line...";
+        }
+    }
+    infile.close(); // Always close the file when finished reading
+
+    // 3. Safety check: make sure we have at least 2 readings to compare
+    if (pressures.size() < 2) {
+        cout << "Waiting for more data points..." << endl;
+        return 0.0;
+    }
+
+    // 4. Grab the very first reading (initial) and the latest reading (final)
+    double initialPressure = pressures.front(); // First item in the list
+    double finalPressure = pressures.back();   // Last item in the list
+    
+    // 5. Calculate Delta P
+    double deltaPressure = finalPressure - initialPressure;
+
+    cout << "Initial Pressure: " << initialPressure << " hPa" << endl;
+    cout << "Final Pressure: " << finalPressure << " hPa" << endl;
+    cout << "Calculated Delta P: " << deltaPressure << " hPa" << endl;
+
+    return deltaPressure;
 }
 
 bool isPressureFalling(double deltaPressure)
@@ -49,20 +85,40 @@ double index(double pO, double deltaPressure)
     }
 }
 
-string zambrettiWeather(int zambrettiIndex, double deltaPressure)
+bool isEasternleyWind(double windDirection)
 {
-    //if(isEasternleyWind(double windDirection) || isWesternlyWind(double windDirection))
-    //{
-        //zambrettiIndex += 1;
-    //}
-    //else if(isSouthernleyWind(double windDirection))
-    //{
-        //zambrettiIndex += 2;
-    //}
-    //else if(isNorthenlyWind(double windDirection))
-    //{
-        //zambrettiIndex -= 1;
-    //}
+    return (windDirection >= 67.5) && (windDirection <= 112.5);
+}
+
+bool isSouthernleyWind(double windDirection)
+{
+    return (windDirection >= 157.5) && (windDirection <= 200.5);
+}
+
+bool isNorthernleyWind(double windDirection)
+{
+    return (windDirection >= 22.5) && (windDirection >= 337.5);
+}
+
+bool isWesternleyWind(double windDirection)
+{
+    return (windDirection >= 247.5) && (windDirection <= 292.5);
+}
+
+string zambrettiWeather(int zambrettiIndex, double deltaPressure, double windDirection)
+{
+    if(isEasternleyWind(windDirection) || isWesternleyWind(windDirection))
+    {
+        zambrettiIndex += 1;
+    }
+    else if(isSouthernleyWind(windDirection))
+    {
+        zambrettiIndex += 2;
+    }
+    else if(isNorthernleyWind(windDirection))
+    {
+        zambrettiIndex -= 1;
+    }
 
     if(isPressureFalling(deltaPressure))
     {
@@ -160,6 +216,8 @@ string zambrettiWeather(int zambrettiIndex, double deltaPressure)
 
 int main()
 {
+    //The wind direction measured by our cansat, for the moment it is set to the dummy value 180, later we will properly measure this value
+    double windDirection = 180;
     //Sea level equivalent pressure in hectopascals
     double pO;
     //The raw pressure measured by the BME280 sensor in hectopascals
@@ -172,11 +230,11 @@ int main()
     pO = rawToSeaLevelPressure(p, temperature, altitude);
     double deltaPressure;
     //Calculates change in pressure
-    deltaPressure =  changeInPressure(pO);
+    deltaPressure =  changeInPressure();
     //Zambretti Index gives us what sort of weather we have
     int zambrettiIndex = (int)index(pO, deltaPressure);
 
-    cout<<zambrettiWeather(zambrettiIndex, deltaPressure)<<endl;
+    cout<<zambrettiWeather(zambrettiIndex, deltaPressure, windDirection)<<endl;
     
 
 }
