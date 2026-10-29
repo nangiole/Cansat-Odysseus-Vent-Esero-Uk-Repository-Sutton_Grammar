@@ -10,8 +10,8 @@
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-const char *ssid = "WSTEST";
-const char *password = "waveshare0755";
+const char *ssid = "VM5879316";
+const char *password = "vfttd6r5tEnuVupp";
 
 void startCameraServer();
 void setupLedFlash();
