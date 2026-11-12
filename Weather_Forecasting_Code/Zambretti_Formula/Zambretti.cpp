@@ -14,7 +14,8 @@ double rawToSeaLevelPressure(double p, double temperature, double altitude)
     return pO;
 }
 
-double changeInPressure() {
+void readValueDeltaPressure(double &deltaPressure, double &finalPressure)
+{
     // 1. Open the text file created by Python
     ifstream infile("pressure_log.txt");
     string line;
@@ -36,22 +37,28 @@ double changeInPressure() {
     // 3. Safety check: make sure we have at least 2 readings to compare
     if (pressures.size() < 2) {
         cout << "Waiting for more data points..." << endl;
-        return 0.0;
+        return;
     }
 
     // 4. Grab the very first reading (initial) and the latest reading (final)
     double initialPressure = pressures.front(); // First item in the list
     double finalPressure = pressures.back();   // Last item in the list
-    
     // 5. Calculate Delta P
-    double deltaPressure = finalPressure - initialPressure;
-
+    deltaPressure = finalPressure - initialPressure;
     cout << "Initial Pressure: " << initialPressure << " hPa" << endl;
     cout << "Final Pressure: " << finalPressure << " hPa" << endl;
     cout << "Calculated Delta P: " << deltaPressure << " hPa" << endl;
 
-    return deltaPressure;
 }
+
+double returnChangeInPressure() 
+{
+    double deltaPressure;
+    double finalPressure
+    readValueDeltaPressure(deltaPressure, finalPressure);
+    return finalPressure;
+}
+
 
 bool isPressureFalling(double deltaPressure)
 {
@@ -214,23 +221,24 @@ string zambrettiWeather(int zambrettiIndex, double deltaPressure, double windDir
     }
 }
 
+//KEY NOTE FOR CANSAT: EVERYTHING IN THIS PROGRAM IS MEASURED LONG TERM BY THE GROUND STATION ACROSS 3 HOURS, OTHER PROGRAMS SUCH AS dewPoint.cpp USE DATA FROM THE CANSAT'S 60 FALL
 int main()
 {
+    //The raw pressure measured by the ground station in hectopascals
+    double p;
+        //Sea level equivalent pressure in hectopascals
+    double pO;
+    //Calculates changes in pressure across a three hour window
+    double deltaPressure;
+    deltaPressure =  changeInPressure();
     //The wind direction measured by our cansat, for the moment it is set to the dummy value 180, later we will properly measure this value
     double windDirection = 180;
-    //Sea level equivalent pressure in hectopascals
-    double pO;
-    //The raw pressure measured by the BME280 sensor in hectopascals
-    double p;
-    //The temperature measured by the BME280 sensor in Degrees Celsius
+    //The temperature measured by the ground station in Degrees Celsius
     double temperature = 15;
     //The altitude above sea level (in meters) at the launch site set to a temporary value for the moment. Will be updated to the real value when we know the launch site
     double altitude = 40;
     //Calculates the sea level equivalent pressure required for the zambretti formula
     pO = rawToSeaLevelPressure(p, temperature, altitude);
-    double deltaPressure;
-    //Calculates change in pressure
-    deltaPressure =  changeInPressure();
     //Zambretti Index gives us what sort of weather we have
     int zambrettiIndex = (int)index(pO, deltaPressure);
 
