@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include "dewPoint.h"
 
 using namespace std;
 
@@ -230,7 +231,7 @@ int main()
     double pO;
     //Calculates changes in pressure across a three hour window
     double deltaPressure;
-    deltaPressure =  changeInPressure();
+    deltaPressure =  returnChangeInPressure();
     //The wind direction measured by our cansat, for the moment it is set to the dummy value 180, later we will properly measure this value
     double windDirection = 180;
     //The temperature measured by the ground station in Degrees Celsius
